@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 Bu script hazır olduğunda websitenin codebase ine şunu ekleyelim : 
 
@@ -39,3 +40,6 @@ args = [
 ]
 
 initialize_upload(args)
+=======
+This repository is to automate video uploading process
+>>>>>>> origin/master
