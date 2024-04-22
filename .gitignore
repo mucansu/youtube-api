@@ -1,0 +1,16 @@
+video/.
+venv.
+
+# Ignore specific files
+client_secrets.json
+content_details.json
+upload_video.py-oauth2.json
+
+# Ignore specific directories
+credentials/
+venv/
+video/
+"manuely\303\274kleme"
+
+git add .gitignore
+git commit -m "Add .gitignore to ignore specified files and directories"

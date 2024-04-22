@@ -13,8 +13,8 @@ from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 
 
-# Explicitly tell the underlying HTTP transport library not to retry, since
-# we are handling retry logic ourselves.
+# Tekrar deneme işini kendimiz uygulamada yaptığımız için bu pakete kafasına göre ikinci kez deneme yapmamasını söylüyoruz
+# Biz deneme mantığını kendimiz yapacağız.
 httplib2.RETRIES = 1
 
 # Maximum number of times to retry before giving up.
@@ -85,7 +85,10 @@ def initialize_upload(youtube, options):
   if options.keywords:
     tags = options.keywords.split(",")
 
-  body=dict(
+# Bu kısımda video nesnesini oluşturuyoruz, ve bilgilerini de (başlık, acıklama, etiketler vs.) ekliyoruz.
+# bu bilgileri client tarafından almış olmamız gerekiyor, client tarafında bu bilgilerin nasıl işlendiğini
+# görmem lazım. 
+  body=dict( 
     snippet=dict(
       title=options.title,
       description=options.description,
