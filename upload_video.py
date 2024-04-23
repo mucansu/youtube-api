@@ -11,6 +11,7 @@ from googleapiclient.http import MediaFileUpload
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
+import requests
 
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
@@ -157,25 +158,16 @@ if __name__ == '__main__':
   #bu objenin attribute lerine (body.file, body.description, body.keywords vs.) ulasabiliriz 
   url='https://ksv.mintyazilim.com/api/course/program/?format=json&id=' + id
   response=requests.get(url)
+  if response is None:
+    exit("Istenen ders bilgileri alınamadı")
   body = response.json()
-  argparser.add_argument("--file", required=True, help="Video file to upload")
-  argparser.add_argument("--title", help="Video title", default="Test Title")
-  argparser.add_argument("--description", help="Video description",
-    default="Test Description")
-  argparser.add_argument("--category", default="22",
-    help="Numeric video category. " +
-      "See https://developers.google.com/youtube/v3/docs/videoCategories/list")
-  argparser.add_argument("--keywords", help="Video keywords, comma separated",
-    default="")
-  argparser.add_argument("--privacyStatus", choices=VALID_PRIVACY_STATUSES,
-    default=VALID_PRIVACY_STATUSES[0], help="Video privacy status.")
-  args = argparser.parse_args()
-
-  if not os.path.exists(body.file):
+  id=filename=body.file.split("/")[-1].split('.')[0] 
+  file = body.file
+  if not os.path.exists(file):
     exit("Istenen video bulunamadı")
 
-  youtube = get_authenticated_service(args)
+  youtube = get_authenticated_service()
   try:
-    initialize_upload(youtube, body)
+    initialize_upload(youtube,file,body)
   except HttpError as e:
     print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
