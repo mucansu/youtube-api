@@ -61,6 +61,8 @@ def initialize_upload(youtube,file, body):
     tags = body.keywords.split(",")
 
   # Call the API's videos.insert method to create and upload the video.
+  #body ile birlikte API anahtarını keys içerisinde almamız gerekiyor. Bunu djangodaki servise hard code olarak 
+  #eklemek lazım.
   insert_request = youtube.videos().insert(
     part=",".join(body.keys()),
     body=body,
@@ -107,11 +109,23 @@ if __name__ == '__main__':
   #bu objenin attribute lerine (body.file, body.description, body.keywords vs.) ulasabiliriz 
   url='https://ksv.mintyazilim.com/api/course/program/?format=json&id=' + id
   response=requests.get(url)
-  if response is None:
+  #if response is None:
+  # exit("Istenen ders bilgileri alınamadı")
+  
+  if response.status_code != 200:
     exit("Istenen ders bilgileri alınamadı")
-  body = response.json()
+
+  try:
+    body = response.json()
+    file = body.file
+    filename = body.file.split("/")[-1].split('.')[0]
+  except ValueError:
+    exit("Gelen veri formatı hatalı")
+  
+  """body = response.json()
   id=filename=body.file.split("/")[-1].split('.')[0] 
-  file = body.file
+  file = body.file"""
+  
   if not os.path.exists(file):
     exit("Istenen video bulunamadı")
 
