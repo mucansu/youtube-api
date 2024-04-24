@@ -125,7 +125,6 @@ if __name__ == '__main__':
     #file = Video_directory + filename
     
     file = body.file
-    
     #id sadece istek gönderirken lazım, file ise video dosyasının tam adı. 
     #filename = id
     id = body.file.split("/")[-1].split('.')[0]
