@@ -12,6 +12,42 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 import requests
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+"""
+watchdog_dict = {}
+
+# Define event handler for file creation events
+class VideoHandler(FileSystemEventHandler):
+    def on_created(self, event):
+        if event.is_directory:
+            return
+        # Get the file name and path
+        file_path = event.src_path
+        file_name = os.path.basename(file_path)
+        # Add information about the new video to the dictionary
+        watchdog_dict[file_name] = {
+            'path': file_path,
+            'created_at': time.time()  # You can use a timestamp or any other relevant information
+        }
+
+# Set up the watchdog observer
+observer = Observer()
+observer.schedule(VideoHandler(), path='/path/to/videos')  # Replace '/path/to/videos' with the directory where your videos are saved
+observer.start()
+
+# Keep the script running to continue monitoring
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    # Stop the observer if the script is interrupted
+    observer.stop()
+
+# Wait for the observer to finish
+observer.join()
+
+"""
 
 
 httplib2.RETRIES = 1
