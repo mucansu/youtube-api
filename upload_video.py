@@ -117,8 +117,18 @@ if __name__ == '__main__':
 
   try:
     body = response.json()
+    #burada file bir video dosyasını ifade ediyor, bu video klasörünün yeri de response dan alınıyor.
+    #Halbuki klasöre erişen biz bu script ile erişiyoruz, path işini burda çözüp sadece id ile bilgileri alsak?
+    #Video klasörünün yeri sabit olacağı için bunu hard code ile belirtebiliriz.
+
+    #Video_directory = "/videolar/"
+    #file = Video_directory + filename
+    
     file = body.file
-    filename = body.file.split("/")[-1].split('.')[0]
+    
+    #id sadece istek gönderirken lazım, file ise video dosyasının tam adı. 
+    #filename = id
+    id = body.file.split("/")[-1].split('.')[0]
   except ValueError:
     exit("Gelen veri formatı hatalı")
   
