@@ -14,41 +14,34 @@ from oauth2client.tools import argparser, run_flow
 import requests
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-"""
-watchdog_dict = {}
+import os
+import time
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
+watchdog_dict = {}
+uploaded_ID = {}
 # Define event handler for file creation events
 class VideoHandler(FileSystemEventHandler):
-    def on_created(self, event):
-        if event.is_directory:
-            return
-        # Get the file name and path
-        file_path = event.src_path
-        file_name = os.path.basename(file_path)
-        # Add information about the new video to the dictionary
-        watchdog_dict[file_name] = {
-            'path': file_path,
-            'created_at': time.time()  # You can use a timestamp or any other relevant information
-        }
+  def on_created(self, event):
+    if event.is_directory:
+      return
 
-# Set up the watchdog observer
-observer = Observer()
-observer.schedule(VideoHandler(), path='/path/to/videos')  # Replace '/path/to/videos' with the directory where your videos are saved
-observer.start()
-
-# Keep the script running to continue monitoring
-try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    # Stop the observer if the script is interrupted
-    observer.stop()
-
-# Wait for the observer to finish
-observer.join()
-
-"""
-
+    file_path = event.src_path
+    file_name = os.path.basename(file_path)
+    id = file_name.split("/")[-1].split('.')[0]
+    print(file_path)
+   
+    if id in uploaded_ID:
+      return
+    uploaded_ID[id] = True
+   
+    if id not in watchdog_dict:
+      watchdog_dict[id] = {
+        'path': file_path,
+        'created_at': time.time()
+      }
+  
 
 httplib2.RETRIES = 1
 MAX_RETRIES = 10
@@ -141,6 +134,22 @@ def resumable_upload(insert_request):
       time.sleep(sleep_seconds)
 
 if __name__ == '__main__':
+  path='//home/mint/mustafa2/youtubeapi/videolar'
+  event_handler = VideoHandler()
+  observer = Observer()
+  observer.schedule(event_handler, path, recursive=True)
+  observer.start()
+  # Keep the script running to continue monitoring
+  try:
+    while True:
+      time.sleep(600) # 10 dk de bir kontrol edecek
+  except KeyboardInterrupt:
+  # Stop the observer if the script is interrupted
+    observer.stop()
+
+# Wait for the observer to finish
+  observer.join()
+  
   #body diğer servisten obje olarak gelecek
   #bu objenin attribute lerine (body.file, body.description, body.keywords vs.) ulasabiliriz 
   url='https://ksv.mintyazilim.com/api/course/program/?format=json&id=' + id
@@ -179,3 +188,5 @@ if __name__ == '__main__':
     initialize_upload(youtube,file,body)
   except HttpError as e:
     print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+
+  
