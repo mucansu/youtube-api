@@ -18,7 +18,8 @@ import os
 import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-
+from youtubeapi.upload_video import get_video_info
+from youtubeapi.upload_video import initialize_upload
 watchdog_dict = {}
 uploaded_ID = {}
 # Define event handler for file creation events
@@ -31,7 +32,7 @@ class VideoHandler(FileSystemEventHandler):
     file_name = os.path.basename(file_path)
     id = file_name.split("/")[-1].split('.')[0]
     print(file_path)
-   
+    
     if id in uploaded_ID:
       return
     uploaded_ID[id] = True
@@ -41,6 +42,8 @@ class VideoHandler(FileSystemEventHandler):
         'path': file_path,
         'created_at': time.time()
       }
+    get_video_info(id)
+    initialize_upload(file_name,body)
   
 
 httplib2.RETRIES = 1
@@ -84,7 +87,8 @@ def get_authenticated_service():
   return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
     http=credentials.authorize(httplib2.Http()))
 
-def initialize_upload(youtube,file, body):
+def initialize_upload(file, body):
+  youtube = get_authenticated_service()
   tags = None
   if body.keywords:
     tags = body.keywords.split(",")
@@ -132,6 +136,27 @@ def resumable_upload(insert_request):
       sleep_seconds = random.random() * max_sleep
       print ("Sleeping %f seconds and then retrying..." % sleep_seconds)
       time.sleep(sleep_seconds)
+def get_video_info(id):
+    url = 'https://ksv.mintyazilim.com/api/course/program/?format=json&id=' + id
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        exit("Istenen ders bilgileri alınamadı")
+    
+    try:
+        body = response.json()        
+        if not os.path.exists(body.file):
+          exit("Istenen video bulunamadı")
+    except ValueError:
+        exit("Gelen veri formatı hatalı")
+    
+    return body, id
+
+# ...
+
+
+
+
 
 if __name__ == '__main__':
   path='//home/mint/mustafa2/youtubeapi/videolar'
@@ -160,28 +185,7 @@ if __name__ == '__main__':
   if response.status_code != 200:
     exit("Istenen ders bilgileri alınamadı")
 
-  try:
-    body = response.json()
-    #burada file bir video dosyasını ifade ediyor, bu video klasörünün yeri de response dan alınıyor.
-    #Halbuki klasöre erişen biz bu script ile erişiyoruz, path işini burda çözüp sadece id ile bilgileri alsak?
-    #Video klasörünün yeri sabit olacağı için bunu hard code ile belirtebiliriz.
 
-    #Video_directory = "/videolar/"
-    #file = Video_directory + filename
-    
-    file = body.file
-    #id sadece istek gönderirken lazım, file ise video dosyasının tam adı. 
-    #filename = id
-    id = body.file.split("/")[-1].split('.')[0]
-  except ValueError:
-    exit("Gelen veri formatı hatalı")
-  
-  """body = response.json()
-  id=filename=body.file.split("/")[-1].split('.')[0] 
-  file = body.file"""
-  
-  if not os.path.exists(file):
-    exit("Istenen video bulunamadı")
 
   youtube = get_authenticated_service()
   try:
