@@ -5,13 +5,25 @@ import os
 import random
 import sys
 import time
+import schedule
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
+import schedule_test
 
+def get_video_info(file, title="Test Title", description="Test Description", category="22", keywords="egitim,bilgi", privacyStatus='public'):
+    video_info = {
+        "file": file,
+        "title": title,
+        "description": description,
+        "category": category,
+        "keywords": keywords,
+        "privacyStatus": privacyStatus
+    }
+    return video_info
 
 # Tekrar deneme işini kendimiz uygulamada yaptığımız için bu pakete kafasına göre ikinci kez deneme yapmamasını söylüyoruz
 # Biz deneme mantığını kendimiz yapacağız.
@@ -154,8 +166,8 @@ def resumable_upload(insert_request):
       sleep_seconds = random.random() * max_sleep
       print ("Sleeping %f seconds and then retrying..." % sleep_seconds)
       time.sleep(sleep_seconds)
-
 if __name__ == '__main__':
+
   argparser.add_argument("--file", required=True, help="Video file to upload")
   argparser.add_argument("--title", help="Video title", default="Test Title")
   argparser.add_argument("--description", help="Video description",

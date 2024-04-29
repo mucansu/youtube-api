@@ -12,6 +12,7 @@ readme.txt
 credentials/
 venv/
 video/
+videolar/
 "manuely\303\274kleme"
 __pycache__/
 git add .gitignore
