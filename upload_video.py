@@ -12,8 +12,57 @@ from googleapiclient.http import MediaFileUpload
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
-import schedule_test
+import schedule as sch
 
+
+"""
+path = '/home/mint/mustafa2/youtubeapi/video'
+for filename in os.listdir(path):
+    print(filename)
+"""
+path = '/home/mint/mustafa2/youtubeapi/videolar'
+uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
+def job():
+    print("I'm working...")
+    filename, id = check_files()
+    body = {
+        "snippet": {
+            "file": os.path.join(path, filename), 
+            "title": "Test Title",
+            "description": "Test Description", 
+            "keywords": "", 
+            "category": "22" 
+        },
+        "status": {
+            "privacyStatus": "public"
+        }
+    }
+    try:
+        initialize_upload(youtube, body)
+        print("Video uploaded")
+    except HttpError as e:
+        print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+    move_files(filename)
+def schedule():
+    sch.every(10).seconds.do(job)
+
+    while True:
+        sch.run_pending()
+        time.sleep(1)
+
+
+def check_files():
+    for filename in os.listdir(path):
+        id = filename.split('.')[0]
+        print(id)
+    return filename,id
+        
+
+def move_files(filename):
+    os.rename(os.path.join(path, filename), os.path.join(uploaded_path, filename))
+    print("Dosya taşındı")
+
+"""
 def get_video_info(file, title="Test Title", description="Test Description", category="22", keywords="egitim,bilgi", privacyStatus='public'):
     video_info = {
         "file": file,
@@ -23,7 +72,7 @@ def get_video_info(file, title="Test Title", description="Test Description", cat
         "keywords": keywords,
         "privacyStatus": privacyStatus
     }
-    return video_info
+    return video_info"""
 
 # Tekrar deneme işini kendimiz uygulamada yaptığımız için bu pakete kafasına göre ikinci kez deneme yapmamasını söylüyoruz
 # Biz deneme mantığını kendimiz yapacağız.
@@ -92,30 +141,30 @@ def get_authenticated_service():
   return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
     http=credentials.authorize(httplib2.Http()))
 
-def initialize_upload(youtube, options):
+def initialize_upload(youtube, body):
   tags = None
-  if options.keywords:
-    tags = options.keywords.split(",")
+  if body['snippet']['keywords']:
+    tags = body['snippet']['keywords'].split(",")
 
 # Bu kısımda video nesnesini oluşturuyoruz, ve bilgilerini de (başlık, acıklama, etiketler vs.) ekliyoruz.
 # bu bilgileri client tarafından almış olmamız gerekiyor, client tarafında bu bilgilerin nasıl işlendiğini
 # görmem lazım. 
-  body=dict( 
-    snippet=dict(
-      title=options.title,
-      description=options.description,
-      tags=tags,
-      categoryId=options.category
-    ),
-    status=dict(
-      privacyStatus=options.privacyStatus
+  upload_body=dict( 
+        snippet=dict(
+            title=body['snippet']['title'],
+            description=body['snippet']['description'],
+            tags=tags,
+            categoryId=body['snippet']['category']
+        ),
+        status=dict(
+            privacyStatus=body['status']['privacyStatus']
+        )
     )
-  )
 
   # Call the API's videos.insert method to create and upload the video.
   insert_request = youtube.videos().insert(
-    part=",".join(body.keys()),
-    body=body,
+    part=",".join(upload_body.keys()),
+    body=upload_body,
     # The chunksize parameter specifies the size of each chunk of data, in
     # bytes, that will be uploaded at a time. Set a higher value for
     # reliable connections as fewer chunks lead to faster uploads. Set a lower
@@ -127,7 +176,7 @@ def initialize_upload(youtube, options):
     # practice, but if you're using Python older than 2.6 or if you're
     # running on App Engine, you should set the chunksize to something like
     # 1024 * 1024 (1 megabyte).
-    media_body=MediaFileUpload(options.file, chunksize=-1, resumable=True)
+    media_body=MediaFileUpload(body['snippet']['file'], chunksize=-1, resumable=True)
   )
 
   resumable_upload(insert_request)
@@ -167,25 +216,24 @@ def resumable_upload(insert_request):
       print ("Sleeping %f seconds and then retrying..." % sleep_seconds)
       time.sleep(sleep_seconds)
 if __name__ == '__main__':
+  path = '/home/mint/mustafa2/youtubeapi/videolar'
+  uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
+  body = {
+        "snippet": {
+            "file": path, 
+            "title": "Deneme başlık",  
+            "description": "Deneme açıklama",
+            "keywords": "egitim,ders",
+            "category": "22"
+        },
+        "status": {
+            "privacyStatus": "public"
+        }
+    }
 
-  argparser.add_argument("--file", required=True, help="Video file to upload")
-  argparser.add_argument("--title", help="Video title", default="Test Title")
-  argparser.add_argument("--description", help="Video description",
-    default="Test Description")
-  argparser.add_argument("--category", default="22",
-    help="Numeric video category. " +
-      "See https://developers.google.com/youtube/v3/docs/videoCategories/list")
-  argparser.add_argument("--keywords", help="Video keywords, comma separated",
-    default="")
-  argparser.add_argument("--privacyStatus", choices=VALID_PRIVACY_STATUSES,
-    default=VALID_PRIVACY_STATUSES[0], help="Video privacy status.")
-  args = argparser.parse_args()
-
-  if not os.path.exists(args.file):
+  if not os.path.exists(body['snippet']['file']):
     exit("Please specify a valid file using the --file= parameter.")
 
   youtube = get_authenticated_service()
-  try:
-    initialize_upload(youtube, args)
-  except HttpError as e:
-    print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+  schedule()
+  
