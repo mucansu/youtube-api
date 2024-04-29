@@ -23,8 +23,12 @@ for filename in os.listdir(path):
 path = '/home/mint/mustafa2/youtubeapi/videolar'
 uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
 def job():
+    global youtube
     print("I'm working...")
     filename, id = check_files()
+    if filename is None:
+       print("Yüklenecek dosya bulunamadı")
+       return
     body = {
         "snippet": {
             "file": os.path.join(path, filename), 
@@ -44,7 +48,7 @@ def job():
         print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
     move_files(filename)
 def schedule():
-    sch.every(10).seconds.do(job)
+    sch.every(5).seconds.do(job)
 
     while True:
         sch.run_pending()
@@ -52,6 +56,7 @@ def schedule():
 
 
 def check_files():
+    filename = id = None
     for filename in os.listdir(path):
         id = filename.split('.')[0]
         print(id)
