@@ -41,12 +41,16 @@ def job():
             "privacyStatus": "public"
         }
     }
+    upload_successful = False
     try:
+        print ("Video yükleniyor...")
         initialize_upload(youtube, body)
-        print("Video uploaded")
+        upload_successful = True
     except HttpError as e:
         print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
-    move_files(filename)
+    if upload_successful:
+      print("Video Yüklendi")
+      move_files(filename)
 def schedule():
     sch.every(5).seconds.do(job)
 
