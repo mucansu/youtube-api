@@ -8,11 +8,12 @@ import time
 import schedule
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload 
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 import schedule as sch
+import requests
 
 
 """
@@ -20,37 +21,52 @@ path = '/home/mint/mustafa2/youtubeapi/video'
 for filename in os.listdir(path):
     print(filename)
 """
+url = "https://ksv.mintyazilim.com/api/course/program/?format=json&id="
 path = '/home/mint/mustafa2/youtubeapi/videolar'
 uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
 def job():
-    global youtube
-    print("I'm working...")
-    filename, id = check_files()
-    if filename is None:
-       print("Yüklenecek dosya bulunamadı")
-       return
+  global youtube
+  print("I'm working...")
+  filename, id = check_files()
+  if filename is None:
+   print("Yüklenecek dosya bulunamadı")
+   return
+    
+  url = 'https://ksv.mintyazilim.com/api/course/program/?format=json'
+  if id is not None:
+    url += '&id=' + id
+  response = requests.get(url)
+  if response.status_code == 200:
+    data = response.json()
+    for key, value in data.items():
+        print(f"{key}: {value}")
     body = {
         "snippet": {
+            "title": data["title"],
+            "description": data["description"], 
+            "keywords" : data["tag"],
             "file": os.path.join(path, filename), 
-            "title": "Test Title",
-            "description": "Test Description", 
-            "keywords": "", 
-            "category": "22" 
+            "category": data["categoryId"],
+             
         },
         "status": {
-            "privacyStatus": "public"
+            "privacyStatus": "unlisted",
         }
     }
     upload_successful = False
     try:
         print ("Video yükleniyor...")
-        initialize_upload(youtube, body)
+       # initialize_upload(youtube, body)
         upload_successful = True
     except HttpError as e:
         print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
+        
     if upload_successful:
       print("Video Yüklendi")
       move_files(filename)
+  else:
+      print(f"Error: {response.status_code}")
+      print("Yükleme işlemi başarısız oldu")
 def schedule():
     sch.every(5).seconds.do(job)
 
@@ -60,7 +76,7 @@ def schedule():
 
 
 def check_files():
-    filename = id = None
+    filename = id = None # bu kısım gerekli, çünkü filename yok ise program çalışmayı durduruyor
     for filename in os.listdir(path):
         id = filename.split('.')[0]
         print(id)
@@ -135,7 +151,7 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 
 VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 
-
+"""
 def get_authenticated_service():
   flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
     scope=YOUTUBE_UPLOAD_SCOPE,
@@ -149,7 +165,7 @@ def get_authenticated_service():
 
   return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
     http=credentials.authorize(httplib2.Http()))
-
+"""
 def initialize_upload(youtube, body):
   tags = None
   if body['snippet']['keywords']:
@@ -227,6 +243,12 @@ def resumable_upload(insert_request):
 if __name__ == '__main__':
   path = '/home/mint/mustafa2/youtubeapi/videolar'
   uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
+  #youtube = get_authenticated_service()
+  schedule()
+"""
+  if not os.path.exists(body['snippet']['file']):
+    exit("Please specify a valid file using the --file= parameter.")
+
   body = {
         "snippet": {
             "file": path, 
@@ -239,10 +261,4 @@ if __name__ == '__main__':
             "privacyStatus": "public"
         }
     }
-"""
-  if not os.path.exists(body['snippet']['file']):
-    exit("Please specify a valid file using the --file= parameter.")
-"""
-youtube = get_authenticated_service()
-schedule()
-  
+  """
