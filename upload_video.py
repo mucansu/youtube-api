@@ -56,7 +56,7 @@ def job():
     upload_successful = False
     try:
         print ("Video yükleniyor...")
-       # initialize_upload(youtube, body)
+        initialize_upload(youtube, body)
         upload_successful = True
     except HttpError as e:
         print ("An HTTP error %d occurred:\n%s" % (e.resp.status, e.content))
@@ -151,7 +151,7 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 
 VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 
-"""
+
 def get_authenticated_service():
   flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
     scope=YOUTUBE_UPLOAD_SCOPE,
@@ -165,7 +165,7 @@ def get_authenticated_service():
 
   return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
     http=credentials.authorize(httplib2.Http()))
-"""
+
 def initialize_upload(youtube, body):
   tags = None
   if body['snippet']['keywords']:
@@ -243,7 +243,7 @@ def resumable_upload(insert_request):
 if __name__ == '__main__':
   path = '/home/mint/mustafa2/youtubeapi/videolar'
   uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
-  #youtube = get_authenticated_service()
+  youtube = get_authenticated_service()
   schedule()
 """
   if not os.path.exists(body['snippet']['file']):
