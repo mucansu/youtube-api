@@ -239,10 +239,10 @@ if __name__ == '__main__':
             "privacyStatus": "public"
         }
     }
-
+"""
   if not os.path.exists(body['snippet']['file']):
     exit("Please specify a valid file using the --file= parameter.")
-
-  youtube = get_authenticated_service()
-  schedule()
+"""
+youtube = get_authenticated_service()
+schedule()
   
