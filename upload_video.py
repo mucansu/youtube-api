@@ -21,7 +21,6 @@ path = '/home/mint/mustafa2/youtubeapi/video'
 for filename in os.listdir(path):
     print(filename)
 """
-url = "https://ksv.mintyazilim.com/api/course/program/?format=json&id="
 path = '/home/mint/mustafa2/youtubeapi/videolar'
 uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
 def job():
