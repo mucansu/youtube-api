@@ -14,6 +14,7 @@ from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 import schedule as sch
 import requests
+from oauth2client.client import HttpAccessTokenRefreshError
 
 
 """
@@ -25,10 +26,8 @@ path = '/home/mint/mustafa2/youtubeapi/videolar'
 uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
 def job():
   global youtube
-  print("I'm working...")
   filename, id = check_files()
   if filename is None:
-   print("Yüklenecek dosya bulunamadı")
    return
     
   url = 'https://ksv.mintyazilim.com/api/course/program/?format=json'
@@ -54,6 +53,7 @@ def job():
     }
     upload_successful = False
     try:
+        youtube = get_authenticated_service()
         print ("Video yükleniyor...")
         initialize_upload(youtube, body)
         upload_successful = True
@@ -67,7 +67,7 @@ def job():
       print(f"Error: {response.status_code}")
       print("Yükleme işlemi başarısız oldu")
 def schedule():
-    sch.every(5).seconds.do(job)
+    sch.every(70).minutes.do(job)
 
     while True:
         sch.run_pending()
@@ -152,18 +152,29 @@ VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 
 
 def get_authenticated_service():
-  flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
+    flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
     scope=YOUTUBE_UPLOAD_SCOPE,
     message=MISSING_CLIENT_SECRETS_MESSAGE)
 
-  storage = Storage("%s-oauth2.json" % sys.argv[0])
-  credentials = storage.get()
+    storage = Storage("%s-oauth2.json" % sys.argv[0])
+    credentials = storage.get()
 
-  if credentials is None or credentials.invalid:
-    credentials = run_flow(flow, storage)
+    if credentials is None or credentials.invalid:
+     credentials = run_flow(flow, storage)
+    try:
+        return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
+                     http=credentials.authorize(httplib2.Http()))
+    except HttpAccessTokenRefreshError:
+        # token expired, aynı giriş bilgileri ile refresh ediliyor
+        http = credentials.authorize(httplib2.Http())
+        credentials.refresh(http)
 
-  return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
-    http=credentials.authorize(httplib2.Http()))
+        # yenilenmiş token (credentials) ile yeniden işleme devam ediyoruz
+        storage.put(credentials)
+
+        # servisi tekrar çalıştırıyoruz
+        return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
+                     http=credentials.authorize(httplib2.Http()))
 
 def initialize_upload(youtube, body):
   tags = None
@@ -242,7 +253,7 @@ def resumable_upload(insert_request):
 if __name__ == '__main__':
   path = '/home/mint/mustafa2/youtubeapi/videolar'
   uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
-  youtube = get_authenticated_service()
+  
   schedule()
 """
   if not os.path.exists(body['snippet']['file']):
