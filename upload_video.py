@@ -165,11 +165,11 @@ def get_authenticated_service():
         return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
                      http=credentials.authorize(httplib2.Http()))
     except HttpAccessTokenRefreshError:
-        # token expired, aynı giriş bilgileri ile refresh ediliyor
+        # token expired, aynı giriş bilgileri ile refresh ediyoruz.
         http = credentials.authorize(httplib2.Http())
         credentials.refresh(http)
 
-        # yenilenmiş token (credentials) ile yeniden işleme devam ediyoruz
+        # yenilenmiş token ile yeniden işleme devam ediyoruz
         storage.put(credentials)
 
         # servisi tekrar çalıştırıyoruz
@@ -254,6 +254,7 @@ if __name__ == '__main__':
   path = '/home/mint/mustafa2/youtubeapi/videolar'
   uploaded_path='/home/mint/mustafa2/youtubeapi/yüklenen_videolar'
   
+  print("something happening")
   schedule()
 """
   if not os.path.exists(body['snippet']['file']):
