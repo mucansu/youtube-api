@@ -27,7 +27,9 @@ python youtube_api_scheduler.py
 4. Uploaded videos are moved to the specified directory for uploaded videos.
 
 **Note:** Retriving details from the external service is a need for a whole project that this youtube-api is a part of, unless you do not need to control or match the video details by ID, this part is not necessary.
+
 **Note:** Ensure that the Google Cloud project associated with the OAuth 2.0 credentials has the YouTube Data API enabled. 
+
 **Note:** To use your own data for video details, modify the script the way you want to retrieve information.
 
 ## References
