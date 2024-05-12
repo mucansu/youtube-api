@@ -27,7 +27,7 @@ python youtube_api_scheduler.py
 4. Uploaded videos are moved to the specified directory for uploaded videos.
 
 **Note:** Ensure that the Google Cloud project associated with the OAuth 2.0 credentials has the YouTube Data API enabled. 
-
+**Note:** To use your own data for video details, modify the script the way you want to retrieve information.
 
 ## References
 - [Google API Client Library for Python Documentation](https://developers.google.com/api-client-library/python)
