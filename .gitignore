@@ -4,7 +4,8 @@ venv.
 # Ignore specific files
 client_secrets.json
 content_details.json
-upload_video.py-oauth2.json
+uyoutube.py-oauth2.json
+main.py-oauth2.json
 readme.txt
 
 
@@ -13,10 +14,11 @@ credentials/
 venv/
 video/
 videolar/
+videolar_arsiv/
 yüklenen_videolar/
 schedule_test.py
 274klenen_videolar/
-"manuely\303\274kleme"
+
 __pycache__/
 git add .gitignore
 git commit -m "Add .gitignore to ignore specified files and directories"
